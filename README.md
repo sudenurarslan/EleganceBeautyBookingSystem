@@ -17,7 +17,6 @@ Bu proje, bir güzellik salonu için online randevu oluşturma sistemidir. Kulla
 
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js, Express.js
-- **Veritabanı:** MySQL (Railway üzerinden barındırılıyor)
 - **Deploy:** Render.com
 
 ---
@@ -35,22 +34,10 @@ cd EleganceBeautyBookingSystem
 npm install
 ```
 
-### 3. Veritabanı Bağlantısını Yapılandır
 
-Bir `.env` dosyası oluştur ve şu örneğe göre doldur:
-```env
-DB_HOST=containers-us-west-XXX.railway.app
-DB_PORT=3306
-DB_USER=root
-DB_PASS=yourpassword
-DB_NAME=railway
 ```
 
-Ayrıca `config/db.js` dosyası environment değişkenlerini kullanacak şekilde ayarlanmış olmalıdır.
 
-### 4. Veritabanı Tablolarını Oluştur
-
-Eğer `schema.sql` dosyan varsa, Railway paneline bağlanarak bu dosyayı çalıştırabilirsin. Dilersen DBeaver gibi bir GUI aracı da kullanabilirsin.
 
 ### 5. Uygulamayı Başlat
 ```bash
@@ -62,16 +49,7 @@ Tarayıcıda aç:
 
 ---
 
-## 📂 Klasör Yapısı
-```
-EleganceBeautyBookingSystem/
-├── public/             → CSS, JS ve görseller
-├── routes/             → Express route dosyaları
-├── views/              → Sayfa şablonları (EJS veya HTML)
-├── config/             → Veritabanı ayarları
-├── server.js           → Ana giriş noktası
-├── .env                → Ortam değişkenleri
-└── package.json
+ackage.json
 ```
 
 ---
@@ -85,6 +63,4 @@ EleganceBeautyBookingSystem/
 
 ---
 
-## 📄 Lisans
 
-Bu proje MIT lisansı ile lisanslanmıştır.
