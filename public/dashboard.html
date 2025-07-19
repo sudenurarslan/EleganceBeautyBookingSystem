@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullanıcı Paneli - Elegance Beauty</title>
+  <link rel="stylesheet" href="css/dashboard.css"> 
+
+  
+</head>
+<body onload="checkLoginAndLoadAppointments()">
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <h1>Elegance <span>Beauty</span></h1>
+      </div>
+      <div class="header-buttons">
+        <a class="btn" href="appointment.html">Randevu Al</a>
+        <a class="btn-secondary btn" href="index.html">Ana Sayfa</a>
+        <button class="btn-secondary btn" onclick="logout()">Çıkış Yap</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="welcome-section">
+      <h2>Merhaba <span id="userName"></span></h2>
+      <p>Hesap panelinize hoş geldiniz. Randevularınızı görüntüleyebilir ve yeni randevu alabilirsiniz.</p>
+    </div>
+
+    <div class="appointments-section">
+      <div class="section-title">
+        <h3>Randevularım</h3>
+        <p>Yaklaşan ve geçmiş randevularınızın listesi</p>
+      </div>
+      
+      <div class="filter-controls">
+        <button class="filter-btn active" onclick="filterAppointments('all')">Tümü</button>
+        <button class="filter-btn" onclick="filterAppointments('today')">Bugün</button>
+        <button class="filter-btn" onclick="filterAppointments('upcoming')">Yaklaşan</button>
+        <button class="filter-btn" onclick="filterAppointments('past')">Geçmiş</button>
+      </div>
+
+      <div id="appointmentsList" class="loading">Randevularınız yükleniyor...</div>
+    </div>
+
+    <div class="quick-actions">
+      <h4>Hızlı İşlemler</h4>
+      <a class="btn" href="appointment.html">Yeni Randevu Al</a>
+    </div>
+  </main>
+
+  <script>
+    const serviceMap = {
+      1: "Manikür",
+      2: "Pedikür", 
+      3: "Kalıcı Oje",
+      4: "Cilt Bakımı",
+      5: "Anti-aging Bakım",
+      6: "Saç Kesimi",
+      7:"Saç Bakımı"
+    };
+    const expertMap = {
+      1: "Ezgi Aynal",
+      2: "Sude Tuncu",
+      3: "Sudenur Arslan"
+    };
+
+    let allAppointments = [];
+    let currentFilter = 'all';
+
+    function checkLoginAndLoadAppointments() {
+  const email = localStorage.getItem("userEmail");
+  if (!email) {
+    alert("Lütfen giriş yapınız.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  
+  fetch("/api/userInfo?email=" + encodeURIComponent(email))
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("userName").textContent = data.name || "Kullanıcı";
+    })
+    .catch(err => {
+      console.error("İsim alınamadı:", err);
+      document.getElementById("userName").textContent = "Kullanıcı";
+    });
+
+  
+  fetch("/api/appointments?email=" + encodeURIComponent(email))
+    .then(res => res.json())
+    .then(data => {
+      allAppointments = data || [];
+      displayAppointments();
+    })
+    .catch(err => {
+      document.getElementById("appointmentsList").innerHTML = '<div class="no-appointments">Randevular yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.</div>';
+    });
+}
+
+
+    function getAppointmentStatus(date) {
+      const today = new Date().toISOString().split('T')[0];
+      const appointmentDate = new Date(date);
+      const todayDate = new Date(today);
+
+      if (date === today) return { status: 'today', label: 'Bugün' };
+      else if (appointmentDate > todayDate) return { status: 'upcoming', label: 'Yaklaşan' };
+      else return { status: 'past', label: 'Geçmiş' };
+    }
+
+    function filterAppointments(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      displayAppointments();
+    }
+
+    function displayAppointments() {
+      const container = document.getElementById("appointmentsList");
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!allAppointments || allAppointments.length === 0) {
+        container.innerHTML = '<div class="no-appointments">Henüz bir randevunuz bulunmuyor. Hemen randevu alarak güzellik yolculuğunuza başlayın!</div>';
+        return;
+      }
+
+      let filteredAppointments = allAppointments;
+      switch (currentFilter) {
+        case 'today':
+          filteredAppointments = allAppointments.filter(app => app.date === today);
+          break;
+        case 'upcoming':
+          filteredAppointments = allAppointments.filter(app => new Date(app.date) > new Date());
+          break;
+        case 'past':
+          filteredAppointments = allAppointments.filter(app => new Date(app.date) < new Date());
+          break;
+      }
+
+      if (filteredAppointments.length === 0) {
+        container.innerHTML = '<div class="no-appointments">Bu kategoride randevu bulunmuyor.</div>';
+        return;
+      }
+
+      
+      filteredAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      container.innerHTML = `
+        <div class="appointments-grid">
+          ${filteredAppointments.map(app => {
+            const status = getAppointmentStatus(app.date);
+            const canCancel = status.status === 'today' || status.status === 'upcoming';
+            return `
+              <div class="appointment-card">
+                <div class="appointment-detail">
+                  <strong>Hizmet:</strong>
+                  <span>${serviceMap[app.service_id] || "Bilinmiyor"}</span>
+                </div>
+                <div class="appointment-detail">
+                  <strong>Uzman:</strong>
+                  <span>${expertMap[app.expert_id] || "Bilinmiyor"}</span>
+                </div>
+                <div class="appointment-detail">
+                  <strong>Tarih:</strong>
+                  <span>${new Date(app.date).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div class="appointment-detail">
+                  <strong>Saat:</strong>
+                  <span>${app.time}</span>
+                </div>
+                <div class="appointment-detail">
+                  <strong>Durum:</strong>
+                  <span class="status-badge status-${status.status}">${status.label}</span>
+                </div>
+                ${canCancel ? `<button class="btn" onclick="cancelAppointment(${app.id})" style="margin-top: 1rem;">İptal Et</button>` : ''}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function cancelAppointment(id) {
+      if (!confirm("Bu randevuyu iptal etmek istediğinize emin misiniz?")) return;
+
+      fetch(`/api/appointments/${id}`, {
+        method: "DELETE"
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert("Randevu başarıyla iptal edildi.");
+          checkLoginAndLoadAppointments(); 
+        })
+        .catch(err => {
+          alert("Bir hata oluştu, randevu silinemedi.");
+        });
+    }
+
+    function extractName(email) {
+      
+      let namePart = email.split("@")[0];
+      namePart = namePart.split(/[0-9]/)[0];
+      return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    }
+
+    function logout() {
+      localStorage.removeItem("userEmail");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

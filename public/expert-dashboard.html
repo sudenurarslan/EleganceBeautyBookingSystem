@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uzman Paneli - Elegance Beauty</title>
+  <link rel="stylesheet" href="css/expert-dashboard.css"> 
+
+
+</head>
+<body onload="checkExpertLogin(); loadAppointments();">
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <h1>Elegance <span>Beauty</span></h1>
+      </div>
+      <div class="header-buttons">
+        <button class="btn-secondary btn" onclick="logout()">Çıkış Yap</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="welcome-section">
+      <h2>Hoş Geldiniz <span id="expertName"></span></h2>
+      <p class="expert-title" id="expertTitle"></p>
+      <p>Uzman panelinizden randevularınızı yönetebilir ve müşteri bilgilerinizi görüntüleyebilirsiniz.</p>
+    </div>
+
+    <div class="stats-section">
+      <div class="stat-card">
+        <h3 id="todayCount">0</h3>
+        <p>Bugünkü Randevular</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="upcomingCount">0</h3>
+        <p>Yaklaşan Randevular</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="totalCount">0</h3>
+        <p>Toplam Randevu</p>
+      </div>
+    </div>
+
+    <div class="appointments-section">
+      <div class="section-title">
+        <h3>Randevular</h3>
+        <p>Tüm randevularınızın detaylı listesi</p>
+      </div>
+      
+      <div class="filter-controls">
+        <button class="filter-btn active" onclick="filterAppointments('all')">Tümü</button>
+        <button class="filter-btn" onclick="filterAppointments('today')">Bugün</button>
+        <button class="filter-btn" onclick="filterAppointments('upcoming')">Yaklaşan</button>
+        <button class="filter-btn" onclick="filterAppointments('past')">Geçmiş</button>
+      </div>
+
+      <div id="appointmentsContainer" class="loading">Randevular yükleniyor...</div>
+    </div>
+  </main>
+
+  <script>
+    let allAppointments = [];
+    let currentFilter = 'all';
+  
+    function checkExpertLogin() {
+      const email = localStorage.getItem("specialistEmail");
+      const name = localStorage.getItem("specialistName");
+      const title = localStorage.getItem("specialistTitle");
+  
+      if (!email) {
+        alert("Lütfen giriş yapınız.");
+        window.location.href = "expert-login.html";
+        return;
+      }
+  
+      document.getElementById("expertName").textContent = name || "Uzman";
+      document.getElementById("expertTitle").textContent = title || "";
+    }
+  
+    async function loadAppointments() {
+      try {
+        const specialistId = localStorage.getItem("specialistId");
+        const response = await fetch(`/api/appointments/specialist/${specialistId}`);
+  
+        if (!response.ok) throw new Error();
+  
+        allAppointments = await response.json();
+      } catch (err) {
+        console.error("Randevular yüklenemedi, örnek veri gösteriliyor.");
+        allAppointments = [];
+      }
+  
+      updateStats();
+      displayAppointments();
+    }
+  
+    function updateStats() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayAppointments = allAppointments.filter(app => app.date === today);
+      const upcomingAppointments = allAppointments.filter(app => new Date(app.date) > new Date());
+  
+      document.getElementById('todayCount').textContent = todayAppointments.length;
+      document.getElementById('upcomingCount').textContent = upcomingAppointments.length;
+      document.getElementById('totalCount').textContent = allAppointments.length;
+    }
+  
+    function getAppointmentStatus(date) {
+      const today = new Date().toISOString().split('T')[0];
+      const appointmentDate = new Date(date);
+      const todayDate = new Date(today);
+  
+      if (date === today) return { status: 'today', label: 'Bugün' };
+      else if (appointmentDate > todayDate) return { status: 'upcoming', label: 'Yaklaşan' };
+      else return { status: 'past', label: 'Geçmiş' };
+    }
+  
+    function filterAppointments(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      displayAppointments();
+    }
+  
+    function displayAppointments() {
+      const container = document.getElementById('appointmentsContainer');
+      const today = new Date().toISOString().split('T')[0];
+  
+      let filteredAppointments = allAppointments;
+      switch (currentFilter) {
+        case 'today':
+          filteredAppointments = allAppointments.filter(app => app.date === today);
+          break;
+        case 'upcoming':
+          filteredAppointments = allAppointments.filter(app => new Date(app.date) > new Date());
+          break;
+        case 'past':
+          filteredAppointments = allAppointments.filter(app => new Date(app.date) < new Date());
+          break;
+      }
+  
+      if (filteredAppointments.length === 0) {
+        container.innerHTML = '<div class="no-appointments">Bu kategoride randevu bulunmuyor.</div>';
+        return;
+      }
+  
+      filteredAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+      container.innerHTML = `
+        <table class="appointments-table">
+          <thead>
+            <tr>
+              <th>Müşteri</th>
+              <th>Hizmet</th>
+              <th>Tarih</th>
+              <th>Saat</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredAppointments.map(app => {
+              const status = getAppointmentStatus(app.date);
+              return `
+                <tr>
+                  <td data-label="Müşteri">${extractCustomerName(app.user_email)}</td>
+                  <td data-label="Hizmet">${app.service_name || 'Bilinmiyor'}</td>
+                  <td data-label="Tarih">${new Date(app.date).toLocaleDateString('tr-TR')}</td>
+                  <td data-label="Saat">${app.time}</td>
+                  <td data-label="Durum"><span class="status-badge status-${status.status}">${status.label}</span></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  
+    function extractCustomerName(email) {
+      const namePart = email.split("@")[0];
+      const parts = namePart.split(".");
+      if (parts.length >= 2) {
+        return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+      } else {
+        const clean = namePart.split(/[0-9]/)[0];
+        return clean.charAt(0).toUpperCase() + clean.slice(1);
+      }
+    }
+  
+    function logout() {
+      localStorage.clear();
+      window.location.href = "expert-login.html";
+    }
+  </script>
+  
+</body>
+</html>

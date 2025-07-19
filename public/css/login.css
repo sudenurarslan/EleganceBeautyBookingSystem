@@ -1,0 +1,307 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  body {
+    background-color: #faf9f7;
+    color: #2c2c2c;
+    line-height: 1.6;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .container {
+    background-color: #ffffff;
+    padding: 3rem;
+    border-radius: 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    border: 1px solid #e8e8e8;
+    animation: fadeInUp 0.6s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .logo-header {
+    margin-bottom: 3rem;
+  }
+
+  .logo-header h1 {
+    font-size: 1.8rem;
+    font-weight: 200;
+    color: #2c2c2c;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-header span {
+    color: #d4a574;
+    font-weight: 300;
+  }
+
+  .logo-header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .form-switch {
+    display: flex;
+    margin-bottom: 2rem;
+    border: 1px solid #e8e8e8;
+  }
+
+  .form-switch button {
+    flex: 1;
+    padding: 1rem;
+    background-color: transparent;
+    color: #2c2c2c;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-right: 1px solid #e8e8e8;
+  }
+
+  .form-switch button:last-child {
+    border-right: none;
+  }
+
+  .form-switch button.active {
+    background-color: #2c2c2c;
+    color: #ffffff;
+  }
+
+  .form-switch button:hover:not(.active) {
+    background-color: #faf9f7;
+  }
+
+  form {
+    display: none;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  form input {
+    padding: 1rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    font-size: 0.9rem;
+    color: #2c2c2c;
+    background-color: #faf9f7;
+    transition: all 0.3s ease;
+    font-weight: 300;
+  }
+
+  form input:focus {
+    outline: none;
+    border-color: #d4a574;
+    background-color: #ffffff;
+  }
+
+  form input::placeholder {
+    color: #999;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+
+ 
+  .password-wrapper {
+    position: relative;
+    text-align: left; 
+  }
+
+  .password-requirements {
+    text-align: left;
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+    padding: 0.8rem;
+    background-color: #f5f3f0;
+    border-left: 3px solid #e8e8e8;
+    border-radius: 0 3px 3px 0;
+    display: none; 
+  }
+
+  .password-requirements.valid {
+    border-left-color: #4caf50;
+    background-color: #f0f8f0;
+  }
+
+  .requirement {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+    color: #666;
+    transition: color 0.3s ease;
+  }
+
+  .requirement:last-child {
+    margin-bottom: 0;
+  }
+
+  .requirement.valid {
+    color: #4caf50;
+  }
+
+  .requirement.invalid {
+    color: #f44336;
+  }
+
+  .requirement-icon {
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+
+  .password-strength {
+    margin-top: 0.5rem;
+    height: 4px;
+    background-color: #e8e8e8;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .strength-weak { 
+    background-color: #f44336; 
+    width: 25%; 
+  }
+
+  .strength-fair { 
+    background-color: #ff9800; 
+    width: 50%; 
+  }
+
+  .strength-good { 
+    background-color: #2196f3; 
+    width: 75%; 
+  }
+
+  .strength-strong { 
+    background-color: #4caf50; 
+    width: 100%; 
+  }
+
+  .strength-label {
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left; /* Sol hizalama */
+  }
+
+  form button {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    padding: 1rem 2rem;
+    border: 1px solid #2c2c2c;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+
+  form button:hover {
+    background-color: transparent;
+    color: #2c2c2c;
+  }
+
+  form button:disabled {
+    background-color: #e8e8e8;
+    color: #999;
+    border-color: #e8e8e8;
+    cursor: not-allowed;
+  }
+
+  form button:disabled:hover {
+    background-color: #e8e8e8;
+    color: #999;
+  }
+
+  #loginForm {
+    display: flex;
+  }
+
+  .message {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    color: #d4574a;
+  }
+
+  .message.success {
+    color: #74a574;
+  }
+
+  .back-link {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+  }
+
+  .back-link:hover {
+    color: #d4a574;
+  }
+
+  .back-link::before {
+    content: '← ';
+    margin-right: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 2rem;
+      margin: 1rem;
+    }
+    .back-link {
+      position: static;
+      display: block;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+  }

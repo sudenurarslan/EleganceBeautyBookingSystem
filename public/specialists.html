@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güzellik Uzmanları Yönetimi - Admin Panel</title>
+    <link rel="stylesheet" href="css/specialists.css"> 
+
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>Elegance <span>Beauty</span> - Admin</h1>
+                </a>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Ana Sayfa</a></li>
+                    <li><a href="#" onclick="logout()">Çıkış</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="page-title">
+            <h2>Güzellik Uzmanları Yönetimi</h2>
+            <p>Salonunuzda çalışan uzmanların bilgilerini ve fotoğraflarını yönetin.</p>
+        </div>
+
+        <div class="admin-container">
+            <div class="current-specialists">
+                <h3>Mevcut Uzmanlar</h3>
+                <div class="specialists-grid" id="specialists-grid">
+                   
+                    <div class="specialist-admin-card" data-id="1">
+                        <div class="specialist-photo-section" style="background-image: url('https://images.unsplash.com/photo-1594824406797-feb1210cc9b4?w=300&h=400&fit=crop&crop=face')">
+                            <div class="photo-upload-overlay" onclick="uploadPhoto(1)">
+                                <div class="photo-upload-text">
+                                    <div>📷</div>
+                                    <div>Fotoğraf Değiştir</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="specialist-form">
+                            <div class="form-group">
+                                <label for="name-1">Ad Soyad</label>
+                                <input type="text" id="name-1" value="Ezgi Aynal">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="title-1">Unvan</label>
+                                    <input type="text" id="title-1" value="Kıdemli Güzellik Uzmanı">
+                                </div>
+                                <div class="form-group">
+                                    <label for="experience-1">Deneyim (Yıl)</label>
+                                    <input type="number" id="experience-1" value="8" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="specialization-1">Uzmanlık Alanı</label>
+                                <input type="text" id="specialization-1" value="Tırnak bakımı ve nail art">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="rating-1">Değerlendirme</label>
+                                    <div class="rating-input">
+                                        <input type="number" id="rating-1" value="4.9" min="0" max="5" step="0.1">
+                                        <span>/ 5.0</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status-1">Durum</label>
+                                    <select id="status-1">
+                                        <option value="active" selected>Aktif</option>
+                                        <option value="inactive">Pasif</option>
+                                        <option value="vacation">İzinli</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bio-1">Kısa Açıklama</label>
+                                <textarea id="bio-1" placeholder="Uzman hakkında kısa bilgi...">8 yıllık deneyimi ile tırnak bakımı ve nail art konularında uzman. Müşteri memnuniyetini ön planda tutar.</textarea>
+                            </div>
+                            <button class="btn" onclick="updateSpecialist(1)">Bilgileri Güncelle</button>
+                            <button class="btn btn-danger" onclick="deleteSpecialist(1)" style="margin-top: 0.5rem;">Uzmanı Sil</button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="specialist-admin-card" data-id="2">
+                        <div class="specialist-photo-section" style="background-image: url('https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=300&h=400&fit=crop&crop=face')">
+                            <div class="photo-upload-overlay" onclick="uploadPhoto(2)">
+                                <div class="photo-upload-text">
+                                    <div>📷</div>
+                                    <div>Fotoğraf Değiştir</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="specialist-form">
+                            <div class="form-group">
+                                <label for="name-2">Ad Soyad</label>
+                                <input type="text" id="name-2" value="Sude Tuncu">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="title-2">Unvan</label>
+                                    <input type="text" id="title-2" value="Cilt Bakım Uzmanı">
+                                </div>
+                                <div class="form-group">
+                                    <label for="experience-2">Deneyim (Yıl)</label>
+                                    <input type="number" id="experience-2" value="6" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="specialization-2">Uzmanlık Alanı</label>
+                                <input type="text" id="specialization-2" value="Anti-aging ve cilt sorunları">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="rating-2">Değerlendirme</label>
+                                    <div class="rating-input">
+                                        <input type="number" id="rating-2" value="4.8" min="0" max="5" step="0.1">
+                                        <span>/ 5.0</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status-2">Durum</label>
+                                    <select id="status-2">
+                                        <option value="active" selected>Aktif</option>
+                                        <option value="inactive">Pasif</option>
+                                        <option value="vacation">İzinli</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bio-2">Kısa Açıklama</label>
+                                <textarea id="bio-2" placeholder="Uzman hakkında kısa bilgi...">6 yıldır cilt bakımı alanında hizmet veriyor. Anti-aging ve cilt sorunlarına özel çözümler sunar.</textarea>
+                            </div>
+                            <button class="btn" onclick="updateSpecialist(2)">Bilgileri Güncelle</button>
+                            <button class="btn btn-danger" onclick="deleteSpecialist(2)" style="margin-top: 0.5rem;">Uzmanı Sil</button>
+                        </div>
+                    </div>
+
+                   
+                    <div class="specialist-admin-card" data-id="3">
+                        <div class="specialist-photo-section" style="background-image: url('https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=300&h=400&fit=crop&crop=face')">
+                            <div class="photo-upload-overlay" onclick="uploadPhoto(3)">
+                                <div class="photo-upload-text">
+                                    <div>📷</div>
+                                    <div>Fotoğraf Değiştir</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="specialist-form">
+                            <div class="form-group">
+                                <label for="name-3">Ad Soyad</label>
+                                <input type="text" id="name-3" value="Sudenur Arslan">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="title-3">Unvan</label>
+                                    <input type="text" id="title-3" value="Saç Stylist">
+                                </div>
+                                <div class="form-group">
+                                    <label for="experience-3">Deneyim (Yıl)</label>
+                                    <input type="number" id="experience-3" value="5" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="specialization-3">Uzmanlık Alanı</label>
+                                <input type="text" id="specialization-3" value="Saç kesim, boya ve özel gün makyajı">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="rating-3">Değerlendirme</label>
+                                    <div class="rating-input">
+                                        <input type="number" id="rating-3" value="4.7" min="0" max="5" step="0.1">
+                                        <span>/ 5.0</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status-3">Durum</label>
+                                    <select id="status-3">
+                                        <option value="active" selected>Aktif</option>
+                                        <option value="inactive">Pasif</option>
+                                        <option value="vacation">İzinli</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bio-3">Kısa Açıklama</label>
+                                <textarea id="bio-3" placeholder="Uzman hakkında kısa bilgi...">5 yıllık deneyimi ile saç bakımı ve şekillendirme konularında uzman. Özel günler için makyaj hizmetleri de sunmaktadır.</textarea>
+                            </div>
+                            <button class="btn" onclick="updateSpecialist(3)">Bilgileri Güncelle</button>
+                            <button class="btn btn-danger" onclick="deleteSpecialist(3)" style="margin-top: 0.5rem;">Uzmanı Sil</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-new-specialist">
+                <h3>Yeni Uzman Ekle</h3>
+                <form id="add-specialist-form" onsubmit="addNewSpecialist(event)">
+                    <div class="form-group">
+                        <label for="new-photo">Fotoğraf</label>
+                        <div class="file-upload">
+                            <input type="file" id="new-photo" accept="image/*" onchange="previewNewPhoto(event)">
+                            <label for="new-photo" class="file-upload-label" id="photo-label">
+                                📷 Fotoğraf Seç
+                            </label>
+                        </div>
+                        <div id="photo-preview" style="margin-top: 1rem; display: none;">
+                            <img id="preview-image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-name">Ad Soyad</label>
+                        <input type="text" id="new-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-title">Unvan</label>
+                            <input type="text" id="new-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-experience">Deneyim (Yıl)</label>
+                            <input type="number" id="new-experience" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-specialization">Uzmanlık Alanı</label>
+                        <input type="text" id="new-specialization" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-rating">Değerlendirme</label>
+                            <div class="rating-input">
+                                <input type="number" id="new-rating" min="0" max="5" step="0.1" value="5.0" required>
+                                <span>/ 5.0</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-status">Durum</label>
+                            <select id="new-status" required>
+                                <option value="active" selected>Aktif</option>
+                                <option value="inactive">Pasif</option>
+                                <option value="vacation">İzinli</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-bio">Kısa Açıklama</label>
+                        <textarea id="new-bio" placeholder="Uzman hakkında kısa bilgi..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">Uzman Ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+   
+    <input type="file" id="photo-upload-input" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Elegance Beauty Salon - Admin Panel. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+          const container = document.getElementById("specialists-grid");
+        
+          try {
+            const res = await fetch("/api/specialists");
+            const data = await res.json();
+        
+            container.innerHTML = "";
+        
+            if (data.length === 0) {
+              container.innerHTML = "<p>Uzman bulunamadı.</p>";
+              return;
+            }
+        
+            data.forEach(sp => {
+              const card = document.createElement("div");
+              card.classList.add("specialist-admin-card");
+        
+              card.innerHTML = `
+                <div class="specialist-photo-section" style="background-color:#ddd;">
+                  <div class="photo-upload-overlay">
+                    <div class="photo-upload-text">📷 Fotoğraf</div>
+                  </div>
+                </div>
+                <div class="specialist-form">
+                  <div class="form-group">
+                    <label>Ad Soyad</label>
+                    <input type="text" value="${sp.name}">
+                  </div>
+                  <div class="form-group">
+                    <label>Unvan</label>
+                    <input type="text" value="${sp.title || ''}">
+                  </div>
+                  <div class="form-group">
+                    <label>Değerlendirme</label>
+                    <input type="number" value="${sp.rating || 5}" min="0" max="5" step="0.1">
+                  </div>
+                  <button class="btn">Bilgileri Kaydet</button>
+                </div>
+              `;
+        
+              container.appendChild(card);
+            });
+          } catch (error) {
+            console.error("Uzmanlar yüklenemedi:", error);
+            container.innerHTML = "<p>Uzmanlar yüklenemedi.</p>";
+          }
+        });
+        </script>
+        
+</body>
+</html>

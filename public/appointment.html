@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Randevu Al - Elegance Beauty</title>
+<link rel="stylesheet" href="css/appointment.css"> 
+
+</head>
+<body onload="checkLogin(); fetchServices(); fetchExperts();">
+<header>
+<div class="header-container">
+<div class="logo">
+<h1>Elegance <span>Beauty</span></h1>
+</div>
+<div class="header-buttons">
+<a class="btn-secondary btn" href="dashboard.html">Hesabım</a>
+<a class="btn-secondary btn" href="index.html">Ana Sayfa</a>
+</div>
+</div>
+</header>
+<main>
+<div class="appointment-container">
+<div class="page-title">
+<h2>Randevu Al</h2>
+<p>Size en uygun hizmeti ve uzmanı seçerek randevunuzu oluşturun</p>
+</div>
+
+<div class="step active" id="step1">
+<div class="step-title">
+<h3>Hizmet Seçin</h3>
+<p>Size uygun güzellik hizmetini seçin</p>
+</div>
+<div class="service-grid" id="serviceGrid"></div>
+<div class="button-container">
+<button class="step-button" onclick="nextStep(1)">Devam Et</button>
+</div>
+</div>
+
+<div class="step" id="step2">
+<div class="step-title">
+<h3>Uzman Seçin</h3>
+<p>Deneyimli uzmanlarımızdan birini seçin</p>
+</div>
+<div class="expert-list" id="expertList"></div>
+<div class="button-container">
+<button class="step-button" onclick="nextStep(2)">Devam Et</button>
+</div>
+</div>
+
+<div class="step" id="step3">
+<div class="step-title">
+<h3>Tarih ve Saat Seçin</h3>
+<p>Size uygun tarih ve saati seçin</p>
+</div>
+
+<div class="calendar-container">
+<div class="calendar-header">
+<div class="calendar-nav">
+<button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+<div class="calendar-title" id="calendarTitle"></div>
+<button class="nav-btn" onclick="changeMonth(1)">›</button>
+</div>
+</div>
+<div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+<div class="time-slots" id="timeSlots" style="display: none;">
+<h4>Müsait Saatler</h4>
+<div class="time-grid" id="timeGrid"></div>
+</div>
+
+<div class="button-container">
+<button class="step-button" onclick="submitAppointment()" id="submitBtn" disabled>Randevuyu Oluştur</button>
+</div>
+</div>
+
+<div class="confirmation" id="confirmation"></div>
+</div>
+</main>
+
+<script>
+    let selectedService = null;
+    let selectedExpert = null;
+    let selectedDate = null;
+    let selectedTime = null;
+    let currentDate = new Date();
+    let bookedDates = [];
+    let bookedTimes = [];
+    let services = [];
+
+    const months = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    
+    const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+    function checkLogin() {
+      const email = localStorage.getItem("userEmail");
+      if (!email) {
+        window.location.href = "login.html";
+      }
+    }
+
+    async function fetchServices() {
+      const res = await fetch("/api/services");
+      services = await res.json();
+      const grid = document.getElementById("serviceGrid");
+      services.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "service-card";
+        card.innerHTML = `
+          <div style="font-size:2rem;">${s.icon}</div>
+          <h4>${s.name}</h4>
+          <p>${s.category}</p>
+          <p class="price">${s.price}₺</p>
+          <p class="duration">${s.duration_minutes} dakika</p>
+        `;
+        card.onclick = () => {
+          document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedService = s.id;
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    async function fetchExperts() {
+      const res = await fetch("/api/specialists");
+      const experts = await res.json();
+      const container = document.getElementById("expertList");
+      experts.forEach(expert => {
+        const div = document.createElement("div");
+        div.className = "expert-card";
+        div.innerHTML = `
+          <img src="${expert.photo_url}" alt="Uzman">
+          <div class="expert-info">
+            <strong>${expert.name}</strong>
+            <span>${expert.title}</span>
+            <span class="rating">⭐ ${expert.rating}</span>
+          </div>
+        `;
+        div.onclick = () => {
+          document.querySelectorAll('.expert-card').forEach(c => c.classList.remove('selected'));
+          div.classList.add('selected');
+          selectedExpert = expert.id;
+        };
+        container.appendChild(div);
+      });
+    }
+
+    async function fetchBookedDates() {
+      const res = await fetch("/api/bookedDates");
+      bookedDates = await res.json();
+    }
+
+    async function fetchBookedTimes(date) {
+      const res = await fetch(`/api/bookedTimes?date=${date}`);
+      bookedTimes = await res.json();
+    }
+
+    function nextStep(currentStep) {
+      if (currentStep === 1 && !selectedService) return alert("Lütfen bir hizmet seçiniz.");
+      if (currentStep === 2 && !selectedExpert) return alert("Lütfen bir uzman seçiniz.");
+      
+      document.getElementById("step" + currentStep).classList.remove("active");
+      document.getElementById("step" + (currentStep + 1)).classList.add("active");
+      
+      if (currentStep === 2) {
+        initCalendar();
+        fetchBookedDates();
+      }
+    }
+
+    function initCalendar() {
+      currentDate = new Date();
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      document.getElementById('calendarTitle').textContent = `${months[month]} ${year}`;
+      
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDayOfWeek = firstDay.getDay();
+      
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      
+      
+      days.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        grid.appendChild(dayHeader);
+      });
+      
+      
+      const prevMonthDays = new Date(year, month, 0).getDate();
+      for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.textContent = prevMonthDays - i;
+        grid.appendChild(dayElement);
+      }
+      
+      
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayDate = new Date(year, month, day);
+        
+        
+        if (dayDate < today.setHours(0,0,0,0)) {
+          dayElement.classList.add('other-month');
+          dayElement.style.pointerEvents = 'none';
+        } else {
+          
+          if (dayDate.toDateString() === new Date().toDateString()) {
+            dayElement.classList.add('today');
+          }
+          
+         
+          if (bookedDates.includes(currentDateStr)) {
+            dayElement.classList.add('fully-booked');
+          }
+          
+          dayElement.onclick = () => selectDate(currentDateStr, dayElement);
+        }
+        
+        grid.appendChild(dayElement);
+      }
+      
+      
+      const remainingCells = 42 - (startingDayOfWeek + daysInMonth);
+      for (let day = 1; day <= remainingCells; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.textContent = day;
+        grid.appendChild(dayElement);
+      }
+    }
+
+    function changeMonth(direction) {
+      currentDate.setMonth(currentDate.getMonth() + direction);
+      renderCalendar();
+    }
+
+    async function selectDate(dateStr, element) {
+      
+      document.querySelectorAll('.calendar-day.selected').forEach(day => {
+        day.classList.remove('selected');
+      });
+      
+      element.classList.add('selected');
+      selectedDate = dateStr;
+      
+      
+      await fetchBookedTimes(dateStr);
+      renderTimeSlots();
+      
+      document.getElementById('timeSlots').style.display = 'block';
+    }
+
+    
+    async function renderTimeSlots() {
+  const timeGrid = document.getElementById('timeGrid');
+  timeGrid.innerHTML = '';
+
+  const dateObj = new Date(selectedDate);
+  const dayOfWeek = dateObj.getDay();
+
+  
+  let startHour = 9;
+  let endHour = 19;
+  if (dayOfWeek === 0) {
+    startHour = 10;
+    endHour = 18;
+  }
+
+  
+  const selectedServiceData = services.find(s => s.id === selectedService);
+  const serviceDuration = selectedServiceData ? selectedServiceData.duration_minutes : 30;
+
+  
+  let existingAppointments = [];
+  if (selectedExpert) {
+    try {
+      const res = await fetch(`/api/appointments/specialist/${selectedExpert}?date=${selectedDate}`);
+      existingAppointments = await res.json();
+      console.log('Mevcut randevular:', existingAppointments); 
+    } catch (error) {
+      console.error("Randevu verisi alınamadı:", error);
+    }
+  }
+
+  
+  for (let hour = startHour; hour < endHour; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      const slotElement = document.createElement('div');
+      slotElement.className = 'time-slot';
+      slotElement.textContent = timeStr;
+
+      const slotStart = new Date(`${selectedDate}T${timeStr}:00`);
+      const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
+      
+      console.log(`Slot kontrol: ${timeStr}, Süre: ${serviceDuration}dk`); 
+      
+      
+      const workEndTime = new Date(`${selectedDate}T${String(endHour).padStart(2, '0')}:00:00`);
+      if (slotEnd > workEndTime) {
+        slotElement.classList.add('conflict');
+        slotElement.style.pointerEvents = 'none';
+        timeGrid.appendChild(slotElement);
+        continue;
+      }
+
+      
+      let hasConflict = false;
+      
+      for (let appt of existingAppointments) {
+        const apptStart = new Date(`${selectedDate}T${appt.time}:00`);
+        const apptEnd = new Date(apptStart.getTime() + appt.duration_minutes * 60000);
+        
+        console.log(`Randevu: ${appt.time} (${appt.duration_minutes}dk), Slot: ${timeStr} (${serviceDuration}dk)`); // Debug için
+        
+        
+        if (slotStart < apptEnd && slotEnd > apptStart) {
+          hasConflict = true;
+          console.log(`ÇAKIŞMA BULUNDU: Slot ${timeStr} - Randevu ${appt.time}`); 
+          break;
+        }
+      }
+
+      if (hasConflict) {
+        slotElement.classList.add('conflict');
+        slotElement.style.pointerEvents = 'none';
+      } else {
+        slotElement.onclick = () => selectTime(timeStr, slotElement);
+      }
+
+      timeGrid.appendChild(slotElement);
+    }
+  }
+}
+
+
+async function checkTimeConflict(date, time, serviceId, expertId) {
+  const selectedServiceData = services.find(s => s.id === serviceId);
+  if (!selectedServiceData) return false;
+
+  const serviceDuration = selectedServiceData.duration_minutes;
+  const appointmentStart = new Date(`${date}T${time}`);
+  const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60000);
+
+  try {
+    const res = await fetch(`/api/appointments/specialist/${expertId}?date=${date}`);
+    const appointments = await res.json();
+
+    return appointments.some(appt => {
+      const apptStart = new Date(`${appt.date}T${appt.time}`);
+      const apptDuration = appt.duration_minutes;
+      const apptEnd = new Date(apptStart.getTime() + apptDuration * 60000);
+
+      return (
+        (appointmentStart >= apptStart && appointmentStart < apptEnd) ||
+        (appointmentEnd > apptStart && appointmentEnd <= apptEnd) ||
+        (appointmentStart <= apptStart && appointmentEnd >= apptEnd)
+      );
+    });
+  } catch (error) {
+    console.error("Çakışma kontrolü hatası:", error);
+    return false;
+  }
+}
+
+
+    function selectTime(timeStr, element) {
+      document.querySelectorAll('.time-slot.selected').forEach(slot => {
+        slot.classList.remove('selected');
+      });
+      
+      element.classList.add('selected');
+      selectedTime = timeStr;
+      
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    async function submitAppointment() {
+      if (!selectedDate || !selectedTime) return alert("Lütfen tarih ve saat seçiniz.");
+
+      const email = localStorage.getItem("userEmail");
+      if (!email) {
+        alert("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const appointmentData = {
+        user_email: email,
+        service_id: selectedService,
+        expert_id: selectedExpert,
+        date: selectedDate,
+        time: selectedTime
+      };
+
+      try {
+        const res = await fetch("/api/appointments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(appointmentData)
+        });
+
+        const result = await res.json();
+        const confirmationBox = document.getElementById("confirmation");
+
+        if (res.ok) {
+          confirmationBox.className = "confirmation success";
+          confirmationBox.textContent = "🎉 Randevunuz başarıyla oluşturuldu!";
+        } else {
+          confirmationBox.className = "confirmation error";
+          confirmationBox.textContent = `❌ Randevu oluşturulamadı: ${result.error || "Bilinmeyen bir hata oluştu."}`;
+        }
+
+        confirmationBox.style.display = "block";
+      } catch (error) {
+        console.error("Randevu gönderim hatası:", error);
+        const confirmationBox = document.getElementById("confirmation");
+        confirmationBox.className = "confirmation error";
+        confirmationBox.textContent = "❌ Randevu oluşturulurken bir hata meydana geldi.";
+        confirmationBox.style.display = "block";
+      }
+    }
+</script>
+</body>
+</html>
